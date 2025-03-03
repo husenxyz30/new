@@ -223,6 +223,7 @@ def register_oyachat(email, privy_token, user_id, wallet_address, referral_code)
     return response.status_code == 201
 
 # Proses registrasi untuk satu wallet
+# Proses registrasi untuk satu wallet
 def process_wallet(wallet, referral_code, provider_choice):
     console.print(f"\n[bold cyan]{'='*50}[/bold cyan]")
     logger.info(f"Processing Wallet: {wallet}")
@@ -234,6 +235,11 @@ def process_wallet(wallet, referral_code, provider_choice):
             if success:
                 if register_oyachat(email, privy_token, user_id, wallet, referral_code):
                     logger.info(f"Wallet {wallet} registered successfully!", extra={"markup": True, "highlighter": None})
+                    
+ # Menyimpan data akun ke accounts.txt
+                    with open("accounts.txt", "a") as f:
+                        f.write(f"{wallet},{email}\n")
+                    
                     return True
                 else:
                     logger.error(f"Registration failed for wallet {wallet}")
