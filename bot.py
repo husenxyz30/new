@@ -10,6 +10,14 @@ from rich.console import Console
 from rich.table import Table
 from tqdm import tqdm
 
+# Banner
+def print_banner():
+    console.print("[bold cyan]╔══════════════════════════════════════════════╗[/bold cyan]")
+    console.print("[bold cyan]║       🌟 Oyachat Auto Registrar              ║[/bold cyan]")
+    console.print("[bold cyan]║   Automate your Oyachat account creation!    ║[/bold cyan]")
+    console.print("[bold cyan]║  Created by: https://github.com/husenxyz30   ║[/bold cyan]")
+    console.print("[bold cyan]╚══════════════════════════════════════════════╝[/bold cyan]")
+
 # Setup logging dengan RichHandler
 logging.basicConfig(
     level="INFO",
