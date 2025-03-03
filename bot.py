@@ -41,11 +41,14 @@ def generate_wallets(count):
 def get_temp_email_guerrilla():
     url = "https://api.guerrillamail.com/ajax.php?f=get_email_address"
     response = requests.get(url)
-    data = response.json()
-    email = data['email_addr']
-    sid_token = data['sid_token']
-    logger.info(f"Generated Guerrilla Email: {email}")
-    return email, sid_token
+    if response.status_code == 200:
+        data = response.json()
+        email = data['email_addr']
+        sid_token = data['sid_token']
+        logger.info(f"Generated Guerrilla Email: {email}")
+        return email, sid_token
+    logger.error(f"Failed to get Guerrilla email: {response.status_code} - {response.text}")
+    return None, None
 
 # Fungsi untuk mendapatkan domain yang tersedia dari mail.tm
 def get_mailtm_domains():
@@ -167,7 +170,7 @@ def init_passwordless(email):
         "Accept": "application/json",
         "privy-app-id": "clxjfwh3d005bcewwp6vvtfm6",
         "privy-ca-id": "05809be7-08a0-421a-9bf2-48032805e9e5",
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        "User -Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
         "Origin": "https://oyachat.com",
         "Referer": "https://oyachat.com/"
     }
@@ -185,7 +188,7 @@ def verify_otp(email, otp):
         "Accept": "application/json",
         "privy-app-id": "clxjfwh3d005bcewwp6vvtfm6",
         "privy-ca-id": "05809be7-08a0-421a-9bf2-48032805e9e5",
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        "User -Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
         "Origin": "https://oyachat.com",
         "Referer": "https://oyachat.com/"
     }
@@ -193,9 +196,11 @@ def verify_otp(email, otp):
     
     response = requests.post(url, json=payload, headers=headers)
     logger.info(f"Verify OTP Status: {response.status_code}")
-    privy_token = response.json().get('token')
-    user_id = response.json().get('user', {}).get('id')
-    return response.status_code == 200, privy_token, user_id
+    if response.status_code == 200:
+        privy_token = response.json().get('token')
+        user_id = response.json().get('user', {}).get('id')
+        return True, privy_token, user_id
+    return False, None, None
 
 # Langkah 3: Registrasi/Login ke Oyachat
 def register_oyachat(email, privy_token, user_id, wallet_address, referral_code):
@@ -203,7 +208,7 @@ def register_oyachat(email, privy_token, user_id, wallet_address, referral_code)
     headers = {
         "Content-Type": "application/json",
         "Accept": "*/*",
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        "User -Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
         "Origin": "https://oyachat.com",
         "Referer": f"https://oyachat.com/?referral_code={referral_code}",
         "Cookie": f"privy-token={privy_token}"
@@ -228,9 +233,6 @@ def process_wallet(wallet, referral_code, provider_choice):
     logger.info(f"Processing Wallet: {wallet}")
     email, token = get_temp_email(provider_choice)
     
-    # Tentukan password untuk akun email
-    email_password = "temporarypassword123" if provider_choice == "2" else None  # Hanya untuk mail.tm
-
     if email and token and init_passwordless(email):
         otp = get_otp(email, token, provider_choice)
         if otp:
@@ -241,8 +243,7 @@ def process_wallet(wallet, referral_code, provider_choice):
                     
                     # Menyimpan data akun ke accounts.txt
                     with open("accounts.txt", "a") as f:
-                        f.write(f"{wallet},{email},{email_password}\n")
-                    
+                        f.write(f"{wallet},{email},temporarypassword123\n")  # Simpan password untuk mail.tm
                     return True
                 else:
                     logger.error(f"Registration failed for wallet {wallet}")
@@ -303,4 +304,3 @@ if __name__ == "__main__":
 
     console.print(table)
     logger.info("Script execution completed")
-  
