@@ -20,14 +20,6 @@ logging.basicConfig(
 logger = logging.getLogger("OyachatScript")
 console = Console()
 
-# Banner
-def print_banner():
-    console.print("[bold cyan]╔═══════════════════════════╗[/bold cyan]")
-    console.print("[bold cyan]║       🌟 Oyachat Auto Registrar             ║[/bold cyan]")
-    console.print("[bold cyan]║   Automate your Oyachat account creation!   ║[/bold cyan]")
-    console.print("[bold cyan]║  Github : https://github.com/husenxyz30     ║[/bold cyan]")
-    console.print("[bold cyan]╚═══════════════════════════╝[/bold cyan]")
-
 # Fungsi untuk membuat daftar alamat wallet acak
 def generate_wallets(count):
     w3 = Web3()
@@ -223,11 +215,14 @@ def register_oyachat(email, privy_token, user_id, wallet_address, referral_code)
     return response.status_code == 201
 
 # Proses registrasi untuk satu wallet
-# Proses registrasi untuk satu wallet
 def process_wallet(wallet, referral_code, provider_choice):
     console.print(f"\n[bold cyan]{'='*50}[/bold cyan]")
     logger.info(f"Processing Wallet: {wallet}")
     email, token = get_temp_email(provider_choice)
+    
+    # Tentukan password untuk akun email
+    email_password = "temporarypassword123" if provider_choice == "2" else None  # Hanya untuk mail.tm
+
     if email and token and init_passwordless(email):
         otp = get_otp(email, token, provider_choice)
         if otp:
@@ -236,9 +231,9 @@ def process_wallet(wallet, referral_code, provider_choice):
                 if register_oyachat(email, privy_token, user_id, wallet, referral_code):
                     logger.info(f"Wallet {wallet} registered successfully!", extra={"markup": True, "highlighter": None})
                     
- # Menyimpan data akun ke accounts.txt
+                    # Menyimpan data akun ke accounts.txt
                     with open("accounts.txt", "a") as f:
-                        f.write(f"{wallet},{email}\n")
+                        f.write(f"{wallet},{email},{email_password}\n")
                     
                     return True
                 else:
